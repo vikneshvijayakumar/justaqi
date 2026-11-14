@@ -1,5 +1,8 @@
 package me.viknesh.justaqi.ui
 
+import java.util.Locale
+import kotlin.math.roundToInt
+
 fun agoText(thenMs: Long, nowMs: Long = System.currentTimeMillis()): String {
     val minutes = (nowMs - thenMs) / 60_000
     return when {
@@ -17,3 +20,7 @@ fun hourLabel(hour: Int): String {
     val display = if (h % 12 == 0) 12 else h % 12
     return "$display $suffix"
 }
+
+/** 4.26 -> "4.3", 151.7 -> "152". */
+fun concText(value: Double): String =
+    if (value < 10) String.format(Locale.US, "%.1f", value) else value.roundToInt().toString()

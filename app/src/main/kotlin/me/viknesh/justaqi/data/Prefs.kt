@@ -13,26 +13,35 @@ class Prefs(context: Context) {
             .getOrDefault(AqiScale.CPCB)
         set(value) = sp.edit { putString(KEY_SCALE, value.name) }
 
-    /** Name of a chosen city from [Places.cities], or null to use the device location. */
-    var cityName: String?
-        get() = sp.getString(KEY_CITY, null)
-        set(value) = sp.edit {
-            if (value == null) remove(KEY_CITY) else putString(KEY_CITY, value)
-        }
+    /** A place picked by search, or null to follow the device location. */
+    var chosenPlace: Place?
+        get() = readPlace(KEY_CHOSEN)
+        set(value) = writePlace(KEY_CHOSEN, value)
 
     /**
      * Last location the app saw while it was open. The widget refreshes in the background and
      * uses this, so the app never needs the background-location permission.
      */
     var lastLocation: Place?
-        get() = sp.getString(KEY_LOCATION, null)?.split(",")?.let { parts ->
-            val lat = parts.getOrNull(0)?.toDoubleOrNull()
-            val lon = parts.getOrNull(1)?.toDoubleOrNull()
-            if (lat != null && lon != null) Place("", lat, lon) else null
-        }
-        set(value) = sp.edit {
-            if (value == null) remove(KEY_LOCATION) else putString(KEY_LOCATION, "${value.lat},${value.lon}")
-        }
+        get() = readPlace(KEY_LOCATION)
+        set(value) = writePlace(KEY_LOCATION, value)
+
+    /** True once the first-launch location prompt has been shown, so it is never shown twice. */
+    var askedLocation: Boolean
+        get() = sp.getBoolean(KEY_ASKED, false)
+        set(value) = sp.edit { putBoolean(KEY_ASKED, value) }
+
+    // Stored as "lat,lon,name". The name comes last because it may contain commas.
+    private fun readPlace(key: String): Place? {
+        val parts = sp.getString(key, null)?.split(",", limit = 3) ?: return null
+        val lat = parts.getOrNull(0)?.toDoubleOrNull() ?: return null
+        val lon = parts.getOrNull(1)?.toDoubleOrNull() ?: return null
+        return Place(parts.getOrNull(2).orEmpty(), lat, lon)
+    }
+
+    private fun writePlace(key: String, value: Place?) = sp.edit {
+        if (value == null) remove(key) else putString(key, "${value.lat},${value.lon},${value.name}")
+    }
 
     var snapshot: AirSnapshot?
         get() = sp.getString(KEY_SNAPSHOT, null)?.let { AirSnapshot.fromJson(it) }
@@ -42,7 +51,8 @@ class Prefs(context: Context) {
 
     private companion object {
         const val KEY_SCALE = "scale"
-        const val KEY_CITY = "city"
+        const val KEY_CHOSEN = "chosen_place"
+        const val KEY_ASKED = "asked_location"
         const val KEY_LOCATION = "last_location"
         const val KEY_SNAPSHOT = "snapshot"
     }

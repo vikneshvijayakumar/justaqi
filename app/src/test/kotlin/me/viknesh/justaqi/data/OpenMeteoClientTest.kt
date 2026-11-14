@@ -52,6 +52,13 @@ class OpenMeteoClientTest {
         assertEquals(9, snap.uvFromHour)
         assertEquals(15, snap.uvToHour)
         assertEquals(323, snap.aqiFor(AqiScale.CPCB))
+        assertEquals(6, snap.pollutants.size)
+        val pm25 = snap.pollutants.first { it.pollutant == Pollutant.PM25 }
+        assertEquals(150.0, pm25.concentration)
+        assertEquals(323, pm25.subIndex)
+        val co = snap.pollutants.first { it.pollutant == Pollutant.CO }
+        assertEquals(1.0, co.concentration) // 1000 µg/m³ shown as 1 mg/m³
+        assertEquals("mg/m³", co.unit)
         assertEquals(180, snap.aqiFor(AqiScale.US))
     }
 
@@ -74,6 +81,7 @@ class OpenMeteoClientTest {
             uvMax = 7.0,
             uvFromHour = 9,
             uvToHour = 16,
+            pollutants = listOf(PollutantReading(Pollutant.PM10, 262.0, 212)),
         )
         val copy = AirSnapshot.fromJson(original.toJson())
         assertNotNull(copy)
@@ -84,5 +92,15 @@ class OpenMeteoClientTest {
     @Test
     fun corrupt_json_gives_null() {
         assertNull(AirSnapshot.fromJson("not json"))
+    }
+
+    @Test
+    fun place_search_parses_results() {
+        val body = """{"results":[{"name":"Saket","latitude":28.52,"longitude":77.2,"admin1":"Delhi"},
+            {"name":"Delhi","latitude":28.65,"longitude":77.23,"admin1":"Delhi"}]}"""
+        val places = PlaceSearch.parse(body)
+        assertEquals(listOf("Saket, Delhi", "Delhi"), places.map { it.name })
+        assertEquals(28.52, places[0].lat)
+        assertEquals(emptyList(), PlaceSearch.parse("{}"))
     }
 }

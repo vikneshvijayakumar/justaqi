@@ -2,7 +2,13 @@ package me.viknesh.justaqi.data
 
 import me.viknesh.justaqi.core.AqiScale
 import me.viknesh.justaqi.core.Pollutant
+import org.json.JSONArray
 import org.json.JSONObject
+
+/** One row of the breakdown. [concentration] is the CPCB averaging-window mean: µg/m³, CO in mg/m³. */
+data class PollutantReading(val pollutant: Pollutant, val concentration: Double, val subIndex: Int) {
+    val unit: String get() = if (pollutant == Pollutant.CO) "mg/m³" else "µg/m³"
+}
 
 /** Everything the app and widget show, saved so the widget can render without a network call. */
 data class AirSnapshot(
@@ -16,6 +22,7 @@ data class AirSnapshot(
     val uvMax: Double?,
     val uvFromHour: Int?,
     val uvToHour: Int?,
+    val pollutants: List<PollutantReading> = emptyList(),
 ) {
     fun aqiFor(scale: AqiScale): Int? = if (scale == AqiScale.CPCB) cpcbAqi else usAqi
 
@@ -31,6 +38,11 @@ data class AirSnapshot(
         uvMax?.let { o.put("uvMax", it) }
         uvFromHour?.let { o.put("uvFromHour", it) }
         uvToHour?.let { o.put("uvToHour", it) }
+        val arr = JSONArray()
+        pollutants.forEach {
+            arr.put(JSONObject().put("p", it.pollutant.name).put("c", it.concentration).put("i", it.subIndex))
+        }
+        o.put("pollutants", arr)
         return o.toString()
     }
 
@@ -48,6 +60,12 @@ data class AirSnapshot(
                 uvMax = o.doubleOrNull("uvMax"),
                 uvFromHour = o.intOrNull("uvFromHour"),
                 uvToHour = o.intOrNull("uvToHour"),
+                pollutants = o.optJSONArray("pollutants")?.let { arr ->
+                    List(arr.length()) {
+                        val r = arr.getJSONObject(it)
+                        PollutantReading(Pollutant.valueOf(r.getString("p")), r.getDouble("c"), r.getInt("i"))
+                    }
+                } ?: emptyList(),
             )
         }.getOrNull()
 

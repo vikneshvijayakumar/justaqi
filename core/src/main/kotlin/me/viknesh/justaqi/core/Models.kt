@@ -44,4 +44,6 @@ data class AqiResult(
     val category: AqiCategory,
     val dominant: Pollutant,
     val subIndices: Map<Pollutant, Int>,
+    /** Averaged concentration behind each sub-index: µg/m³, except CO in mg/m³. */
+    val concentrations: Map<Pollutant, Double>,
 )

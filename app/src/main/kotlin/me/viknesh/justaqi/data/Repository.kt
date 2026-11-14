@@ -24,15 +24,16 @@ class Repository(context: Context) {
         }
     }
 
-    /** Chosen city, else the last location the app saw, else Delhi. */
+    /** Chosen place, else the last location the app saw, else Delhi. */
     fun resolvePlace(): Pair<Place, String> {
-        val chosen = prefs.cityName?.let { name -> Places.cities.firstOrNull { it.name == name } }
-        if (chosen != null) return chosen to chosen.name
+        prefs.chosenPlace?.let { return it to it.name }
 
         val last = prefs.lastLocation
         if (last != null) {
-            val near = Places.nearest(last.lat, last.lon)
-            return last to (near?.let { "Near ${it.name}" } ?: "Your location")
+            val label = last.name.ifBlank {
+                Places.nearest(last.lat, last.lon)?.let { "Near ${it.name}" } ?: "Your location"
+            }
+            return last to label
         }
         return Places.DELHI to Places.DELHI.name
     }

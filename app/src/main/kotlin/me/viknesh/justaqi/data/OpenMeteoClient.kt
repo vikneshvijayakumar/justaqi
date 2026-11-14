@@ -91,6 +91,9 @@ object OpenMeteoClient {
             uvMax = todayUv.filterNotNull().maxOrNull(),
             uvFromHour = window?.first,
             uvToHour = window?.last,
+            pollutants = cpcb?.subIndices?.map { (pollutant, sub) ->
+                PollutantReading(pollutant, cpcb.concentrations.getValue(pollutant), sub)
+            } ?: emptyList(),
         )
     }
 }

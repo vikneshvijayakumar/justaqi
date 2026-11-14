@@ -91,10 +91,12 @@ object CpcbAqi {
      */
     fun compute(series: Map<Pollutant, List<Double?>>, endIndex: Int): AqiResult? {
         val subs = LinkedHashMap<Pollutant, Int>()
+        val concentrations = LinkedHashMap<Pollutant, Double>()
         for ((pollutant, values) in series) {
             val mean = windowMean(values, endIndex, windowHours(pollutant)) ?: continue
             val concentration = if (pollutant == Pollutant.CO) mean / 1000.0 else mean
             subs[pollutant] = subIndex(pollutant, concentration)
+            concentrations[pollutant] = concentration
         }
         val hasParticulate = Pollutant.PM25 in subs || Pollutant.PM10 in subs
         if (subs.size < 3 || !hasParticulate) return null
@@ -104,6 +106,7 @@ object CpcbAqi {
             category = AqiCategory.of(worst.value),
             dominant = worst.key,
             subIndices = subs,
+            concentrations = concentrations,
         )
     }
 }

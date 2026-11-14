@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">Just AQI</string>
     <string name="widget_description">Air quality at a glance</string>
+    <string name="widget_detail_name">Just AQI: all pollutants</string>
+    <string name="widget_detail_description">Air quality with every pollutant</string>
 </resources>

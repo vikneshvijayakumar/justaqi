@@ -3,7 +3,6 @@ package me.viknesh.justaqi.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,12 +11,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,12 +34,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.viknesh.justaqi.UiState
 import me.viknesh.justaqi.core.AqiScale
 import me.viknesh.justaqi.core.Sunscreen
+import kotlinx.coroutines.delay
+import me.viknesh.justaqi.data.Place
 import me.viknesh.justaqi.data.Places
 import kotlin.math.roundToInt
 
@@ -41,7 +52,8 @@ fun HomeScreen(
     state: UiState,
     onRefresh: () -> Unit,
     onScale: (AqiScale) -> Unit,
-    onCity: (String?) -> Unit,
+    onPlace: (Place?) -> Unit,
+    onSearch: suspend (String) -> List<Place>,
     onRequestLocation: () -> Unit,
 ) {
     MaterialTheme(colorScheme = lightColorScheme()) {
@@ -57,8 +69,9 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(bg)
                 .systemBarsPadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(32.dp),
         ) {
             // Top: where, and which scale.
             Row(
@@ -68,7 +81,8 @@ fun HomeScreen(
                 PlacePicker(
                     label = snapshot?.placeLabel ?: "Choose place",
                     color = fg,
-                    onCity = onCity,
+                    onPlace = onPlace,
+                    onSearch = onSearch,
                 )
                 ScaleToggle(scale = state.scale, color = fg, onScale = onScale)
             }
@@ -113,7 +127,7 @@ fun HomeScreen(
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 4.dp),
                 )
-                if (state.city == null && !state.hasLocationPermission) {
+                if (state.followsLocation && !state.hasLocationPermission) {
                     Text(
                         text = "Allow location to see air quality where you are",
                         color = fg,
@@ -125,6 +139,8 @@ fun HomeScreen(
                     )
                 }
             }
+
+            Breakdown(state = state, fg = fg, muted = muted)
 
             // Bottom: sun, then the honest footnote.
             Column {
@@ -164,36 +180,142 @@ private fun statusLine(state: UiState): String {
 }
 
 @Composable
-private fun PlacePicker(label: String, color: Color, onCity: (String?) -> Unit) {
+private fun PlacePicker(
+    label: String,
+    color: Color,
+    onPlace: (Place?) -> Unit,
+    onSearch: suspend (String) -> List<Place>,
+) {
     var open by remember { mutableStateOf(false) }
-    Box {
-        Text(
-            text = "$label ▾",
-            color = color,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier
-                .clickable { open = true }
-                .padding(vertical = 8.dp),
+    Text(
+        text = "$label ▾",
+        color = color,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Medium,
+        modifier = Modifier
+            .clickable { open = true }
+            .padding(vertical = 8.dp),
+    )
+    if (open) {
+        PlaceDialog(
+            onDismiss = { open = false },
+            onPick = {
+                open = false
+                onPlace(it)
+            },
+            onSearch = onSearch,
         )
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(
-                text = { Text("My location") },
-                onClick = {
-                    open = false
-                    onCity(null)
-                },
-            )
-            Places.cities.forEach { city ->
-                DropdownMenuItem(
-                    text = { Text(city.name) },
-                    onClick = {
-                        open = false
-                        onCity(city.name)
-                    },
+    }
+}
+
+/** Search box, "Use my location", then search results (or the big cities before any typing). */
+@Composable
+private fun PlaceDialog(
+    onDismiss: () -> Unit,
+    onPick: (Place?) -> Unit,
+    onSearch: suspend (String) -> List<Place>,
+) {
+    var query by remember { mutableStateOf("") }
+    var results by remember { mutableStateOf<List<Place>?>(null) }
+
+    LaunchedEffect(query) {
+        results = null
+        if (query.trim().length >= 2) {
+            delay(350) // wait for a pause in typing
+            results = onSearch(query)
+        }
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(shape = RoundedCornerShape(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    singleLine = true,
+                    placeholder = { Text("Search city, town or area") },
+                    modifier = Modifier.fillMaxWidth(),
                 )
+                PlaceRow(text = "Use my location", bold = true) { onPick(null) }
+
+                val typing = query.trim().length >= 2
+                val shown = if (typing) results else Places.cities
+                when {
+                    shown == null -> Text("Searching…", modifier = Modifier.padding(vertical = 12.dp))
+                    shown.isEmpty() -> Text("No places found", modifier = Modifier.padding(vertical = 12.dp))
+                    else -> LazyColumn(modifier = Modifier.heightIn(max = 360.dp)) {
+                        items(shown) { place -> PlaceRow(text = place.name) { onPick(place) } }
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun PlaceRow(text: String, bold: Boolean = false, onClick: () -> Unit) {
+    Text(
+        text = text,
+        fontSize = 16.sp,
+        fontWeight = if (bold) FontWeight.Medium else FontWeight.Normal,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+    )
+}
+
+/** Every pollutant behind the CPCB number: averaged concentration and its sub-index. */
+@Composable
+private fun Breakdown(state: UiState, fg: Color, muted: Color) {
+    val snapshot = state.snapshot ?: return
+    if (snapshot.pollutants.isEmpty()) return
+    val showIndex = state.scale == AqiScale.CPCB
+
+    Column {
+        Text(text = "Pollutants", color = muted, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        snapshot.pollutants.forEach { reading ->
+            val weight = if (reading.pollutant == snapshot.cpcbDominant) FontWeight.Bold else FontWeight.Normal
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+            ) {
+                Text(
+                    text = reading.pollutant.label,
+                    color = fg,
+                    fontSize = 16.sp,
+                    fontWeight = weight,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = "${concText(reading.concentration)} ${reading.unit}",
+                    color = fg,
+                    fontSize = 16.sp,
+                    fontWeight = weight,
+                )
+                if (showIndex) {
+                    Text(
+                        text = reading.subIndex.toString(),
+                        color = fg,
+                        fontSize = 16.sp,
+                        fontWeight = weight,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.width(56.dp),
+                    )
+                }
+            }
+        }
+        Text(
+            text = if (showIndex) {
+                "24 hour average (8 hour for O₃ and CO), then its CPCB index. The highest index is the AQI."
+            } else {
+                "24 hour average (8 hour for O₃ and CO)."
+            },
+            color = muted,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(top = 8.dp),
+        )
     }
 }
 

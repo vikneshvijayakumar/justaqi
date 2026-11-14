@@ -1,7 +1,6 @@
 package me.viknesh.justaqi.work
 
 import android.content.Context
-import androidx.glance.appwidget.updateAll
 import androidx.work.CoroutineWorker
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -12,7 +11,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import me.viknesh.justaqi.data.RefreshResult
 import me.viknesh.justaqi.data.Repository
-import me.viknesh.justaqi.widget.AqiWidget
+import me.viknesh.justaqi.widget.updateAllWidgets
 import java.util.concurrent.TimeUnit
 
 /** Fetches fresh data and redraws the widget. Runs about every 30 minutes while the device has network. */
@@ -20,7 +19,7 @@ class RefreshWorker(context: Context, params: WorkerParameters) : CoroutineWorke
 
     override suspend fun doWork(): Result {
         val outcome = Repository(applicationContext).refresh()
-        AqiWidget().updateAll(applicationContext)
+        updateAllWidgets(applicationContext)
         return if (outcome is RefreshResult.Ok) Result.success() else Result.retry()
     }
 
