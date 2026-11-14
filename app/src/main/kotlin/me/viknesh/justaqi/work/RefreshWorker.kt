@@ -1,4 +1,4 @@
-package me.viknesh.aqi.work
+package me.viknesh.justaqi.work
 
 import android.content.Context
 import androidx.glance.appwidget.updateAll
@@ -10,9 +10,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import me.viknesh.aqi.data.RefreshResult
-import me.viknesh.aqi.data.Repository
-import me.viknesh.aqi.widget.AqiWidget
+import me.viknesh.justaqi.data.RefreshResult
+import me.viknesh.justaqi.data.Repository
+import me.viknesh.justaqi.widget.AqiWidget
 import java.util.concurrent.TimeUnit
 
 /** Fetches fresh data and redraws the widget. Runs about every 30 minutes while the device has network. */

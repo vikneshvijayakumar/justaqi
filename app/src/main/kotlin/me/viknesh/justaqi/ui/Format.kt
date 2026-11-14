@@ -1,4 +1,4 @@
-package me.viknesh.aqi.ui
+package me.viknesh.justaqi.ui
 
 fun agoText(thenMs: Long, nowMs: Long = System.currentTimeMillis()): String {
     val minutes = (nowMs - thenMs) / 60_000

@@ -1,4 +1,4 @@
-package me.viknesh.aqi.data
+package me.viknesh.justaqi.data
 
 import kotlin.math.asin
 import kotlin.math.cos

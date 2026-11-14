@@ -1,4 +1,4 @@
-package me.viknesh.aqi
+package me.viknesh.justaqi
 
 import android.Manifest
 import android.os.Bundle
@@ -10,8 +10,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import me.viknesh.aqi.ui.HomeScreen
-import me.viknesh.aqi.work.RefreshWorker
+import me.viknesh.justaqi.ui.HomeScreen
+import me.viknesh.justaqi.work.RefreshWorker
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()

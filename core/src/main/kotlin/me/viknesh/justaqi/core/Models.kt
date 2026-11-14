@@ -1,4 +1,4 @@
-package me.viknesh.aqi.core
+package me.viknesh.justaqi.core
 
 enum class Pollutant(val label: String) {
     PM25("PM2.5"),

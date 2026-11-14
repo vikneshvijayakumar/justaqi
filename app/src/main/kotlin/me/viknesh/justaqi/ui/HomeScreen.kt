@@ -1,4 +1,4 @@
-package me.viknesh.aqi.ui
+package me.viknesh.justaqi.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,10 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import me.viknesh.aqi.UiState
-import me.viknesh.aqi.core.AqiScale
-import me.viknesh.aqi.core.Sunscreen
-import me.viknesh.aqi.data.Places
+import me.viknesh.justaqi.UiState
+import me.viknesh.justaqi.core.AqiScale
+import me.viknesh.justaqi.core.Sunscreen
+import me.viknesh.justaqi.data.Places
 import kotlin.math.roundToInt
 
 @Composable

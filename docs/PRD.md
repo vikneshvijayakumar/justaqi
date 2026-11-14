@@ -1,4 +1,4 @@
-# PRD: AQI India (working title)
+# PRD: Just AQI
 
 ## Problem
 Most AQI apps are crowded: maps, news, ads, five competing numbers. Someone in Delhi in November wants one answer: is the air bad right now, and should I do anything about it? The existing widgets are either buried in feature-heavy apps or do not refresh reliably.

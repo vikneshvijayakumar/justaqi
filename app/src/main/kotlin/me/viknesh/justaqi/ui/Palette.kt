@@ -1,9 +1,9 @@
-package me.viknesh.aqi.ui
+package me.viknesh.justaqi.ui
 
 import androidx.compose.ui.graphics.Color
-import me.viknesh.aqi.core.AqiCategory
-import me.viknesh.aqi.core.AqiScale
-import me.viknesh.aqi.core.UsAqiCategory
+import me.viknesh.justaqi.core.AqiCategory
+import me.viknesh.justaqi.core.AqiScale
+import me.viknesh.justaqi.core.UsAqiCategory
 
 data class Band(val bg: Color, val fg: Color)
 

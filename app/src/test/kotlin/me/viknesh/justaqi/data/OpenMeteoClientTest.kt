@@ -1,7 +1,7 @@
-package me.viknesh.aqi.data
+package me.viknesh.justaqi.data
 
-import me.viknesh.aqi.core.AqiScale
-import me.viknesh.aqi.core.Pollutant
+import me.viknesh.justaqi.core.AqiScale
+import me.viknesh.justaqi.core.Pollutant
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException

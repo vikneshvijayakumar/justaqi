@@ -1,9 +1,9 @@
-package me.viknesh.aqi.widget
+package me.viknesh.justaqi.widget
 
 import android.content.Context
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import me.viknesh.aqi.work.RefreshWorker
+import me.viknesh.justaqi.work.RefreshWorker
 
 class AqiWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = AqiWidget()

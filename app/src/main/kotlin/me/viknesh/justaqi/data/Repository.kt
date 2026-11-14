@@ -1,4 +1,4 @@
-package me.viknesh.aqi.data
+package me.viknesh.justaqi.data
 
 import android.content.Context
 import kotlinx.coroutines.CancellationException

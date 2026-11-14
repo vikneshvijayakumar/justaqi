@@ -1,4 +1,4 @@
-package me.viknesh.aqi.core
+package me.viknesh.justaqi.core
 
 import kotlin.math.ceil
 import kotlin.math.roundToInt

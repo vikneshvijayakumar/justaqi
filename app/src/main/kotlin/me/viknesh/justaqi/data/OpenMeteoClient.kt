@@ -1,10 +1,10 @@
-package me.viknesh.aqi.data
+package me.viknesh.justaqi.data
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.viknesh.aqi.core.CpcbAqi
-import me.viknesh.aqi.core.Pollutant
-import me.viknesh.aqi.core.Sunscreen
+import me.viknesh.justaqi.core.CpcbAqi
+import me.viknesh.justaqi.core.Pollutant
+import me.viknesh.justaqi.core.Sunscreen
 import org.json.JSONObject
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -33,7 +33,7 @@ object OpenMeteoClient {
         val connection = (url.openConnection() as HttpURLConnection).apply {
             connectTimeout = 15_000
             readTimeout = 15_000
-            setRequestProperty("User-Agent", "aqi-india-android/0.1 (open source)")
+            setRequestProperty("User-Agent", "justaqi-android/0.1 (open source)")
         }
         try {
             if (connection.responseCode != HttpURLConnection.HTTP_OK) {

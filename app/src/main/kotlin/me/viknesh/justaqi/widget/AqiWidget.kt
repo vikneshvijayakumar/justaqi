@@ -1,4 +1,4 @@
-package me.viknesh.aqi.widget
+package me.viknesh.justaqi.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
@@ -22,12 +22,12 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import me.viknesh.aqi.MainActivity
-import me.viknesh.aqi.core.AqiScale
-import me.viknesh.aqi.data.AirSnapshot
-import me.viknesh.aqi.data.Prefs
-import me.viknesh.aqi.ui.Palette
-import me.viknesh.aqi.ui.agoText
+import me.viknesh.justaqi.MainActivity
+import me.viknesh.justaqi.core.AqiScale
+import me.viknesh.justaqi.data.AirSnapshot
+import me.viknesh.justaqi.data.Prefs
+import me.viknesh.justaqi.ui.Palette
+import me.viknesh.justaqi.ui.agoText
 
 /**
  * Home-screen widget: the number, its category, and where and how fresh it is. Nothing else.

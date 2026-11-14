@@ -1,4 +1,4 @@
-# AQI India (working title)
+# Just AQI
 
 A no-nonsense air quality app for India. One number, one colour, on your home screen.
 

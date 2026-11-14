@@ -1,4 +1,4 @@
-package me.viknesh.aqi.core
+package me.viknesh.justaqi.core
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

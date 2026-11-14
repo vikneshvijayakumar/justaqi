@@ -1,4 +1,4 @@
-package me.viknesh.aqi
+package me.viknesh.justaqi
 
 import android.app.Application
 import androidx.glance.appwidget.updateAll
@@ -11,13 +11,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.viknesh.aqi.core.AqiScale
-import me.viknesh.aqi.data.AirSnapshot
-import me.viknesh.aqi.data.LocationHelper
-import me.viknesh.aqi.data.Prefs
-import me.viknesh.aqi.data.RefreshResult
-import me.viknesh.aqi.data.Repository
-import me.viknesh.aqi.widget.AqiWidget
+import me.viknesh.justaqi.core.AqiScale
+import me.viknesh.justaqi.data.AirSnapshot
+import me.viknesh.justaqi.data.LocationHelper
+import me.viknesh.justaqi.data.Prefs
+import me.viknesh.justaqi.data.RefreshResult
+import me.viknesh.justaqi.data.Repository
+import me.viknesh.justaqi.widget.AqiWidget
 
 data class UiState(
     val snapshot: AirSnapshot?,

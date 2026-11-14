@@ -1,8 +1,8 @@
-package me.viknesh.aqi.data
+package me.viknesh.justaqi.data
 
 import android.content.Context
 import androidx.core.content.edit
-import me.viknesh.aqi.core.AqiScale
+import me.viknesh.justaqi.core.AqiScale
 
 /** Small SharedPreferences wrapper. The widget reads the cached snapshot from here. */
 class Prefs(context: Context) {

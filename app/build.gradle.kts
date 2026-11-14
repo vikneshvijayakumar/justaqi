@@ -5,13 +5,13 @@ plugins {
 }
 
 android {
-    namespace = "me.viknesh.aqi"
+    namespace = "me.viknesh.justaqi"
     // Play requires new apps to target a recent API level. Bump compileSdk/targetSdk to the
     // current requirement before you publish (Android Studio's AGP upgrade assistant helps).
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "me.viknesh.aqi"
+        applicationId = "me.viknesh.justaqi"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

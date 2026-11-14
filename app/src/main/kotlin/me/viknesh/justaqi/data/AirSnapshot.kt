@@ -1,7 +1,7 @@
-package me.viknesh.aqi.data
+package me.viknesh.justaqi.data
 
-import me.viknesh.aqi.core.AqiScale
-import me.viknesh.aqi.core.Pollutant
+import me.viknesh.justaqi.core.AqiScale
+import me.viknesh.justaqi.core.Pollutant
 import org.json.JSONObject
 
 /** Everything the app and widget show, saved so the widget can render without a network call. */

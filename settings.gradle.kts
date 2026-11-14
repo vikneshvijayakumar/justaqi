@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "aqi-india"
+rootProject.name = "justaqi"
 
 include(":app", ":core")

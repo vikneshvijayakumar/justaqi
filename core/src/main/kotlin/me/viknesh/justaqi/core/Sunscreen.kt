@@ -1,4 +1,4 @@
-package me.viknesh.aqi.core
+package me.viknesh.justaqi.core
 
 /** WHO UV index bands. */
 enum class UvLevel(val label: String, val from: Double) {

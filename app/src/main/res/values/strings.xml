@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Working title. Rename before publishing. -->
-    <string name="app_name">AQI India</string>
+    <string name="app_name">Just AQI</string>
     <string name="widget_description">Air quality at a glance</string>
 </resources>

@@ -1,4 +1,4 @@
-package me.viknesh.aqi.data
+package me.viknesh.justaqi.data
 
 import android.Manifest
 import android.annotation.SuppressLint
