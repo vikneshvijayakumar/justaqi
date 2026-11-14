@@ -346,10 +346,14 @@ private fun ScaleToggle(scale: AqiScale, color: Color, onScale: (AqiScale) -> Un
     }
 }
 
+private const val SHOW_SUN_FROM_UV = 2.0
+
 @Composable
 private fun SunBlock(state: UiState, fg: Color, muted: Color) {
     val snapshot = state.snapshot ?: return
     val peak = snapshot.uvMax ?: return
+    // Below UV 2 there is nothing worth saying, so the block stays hidden.
+    if (peak < SHOW_SUN_FROM_UV) return
     val advice = Sunscreen.advise(peak)
     val window = if (snapshot.uvFromHour != null && snapshot.uvToHour != null) {
         "UV 3+ from ${hourLabel(snapshot.uvFromHour)} to ${hourLabel(snapshot.uvToHour + 1)}"

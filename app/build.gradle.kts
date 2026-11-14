@@ -18,6 +18,17 @@ android {
         versionName = "0.1.0"
     }
 
+    // Fixed debug key: CI runners make a new one each build, and Android refuses to update an
+    // app signed with a different key. Debug builds only. Release signing stays out of the repo.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true

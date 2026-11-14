@@ -11,3 +11,5 @@ captures/
 *.aab
 *.jks
 *.keystore
+# Shared debug key so every CI build installs over the last one. Debug only, never for release.
+!app/debug.keystore
