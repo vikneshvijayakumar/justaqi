@@ -151,7 +151,8 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = "Modelled estimate · Open-Meteo",
+                        text = snapshot?.source?.let { "Measured · $it" } ?: "Modelled estimate · Open-Meteo",
+                        modifier = Modifier.weight(1f).padding(end = 12.dp),
                         color = muted,
                         fontSize = 12.sp,
                     )
@@ -172,9 +173,10 @@ private fun statusLine(state: UiState): String {
     val snapshot = state.snapshot
     return when {
         state.loading && snapshot == null -> "Updating…"
-        state.error != null && snapshot != null -> "Couldn't update. Showing data from ${agoText(snapshot.fetchedAtMs)}"
+        state.error != null && snapshot != null -> "Couldn't update. Showing data from ${agoText(snapshot.asOfMs)}"
         state.error != null -> "Couldn't update. Check your connection."
-        snapshot != null -> "Updated ${agoText(snapshot.fetchedAtMs)}"
+        snapshot?.source != null -> "Station reported ${agoText(snapshot.asOfMs)}"
+        snapshot != null -> "Updated ${agoText(snapshot.asOfMs)}"
         else -> ""
     }
 }
@@ -288,13 +290,15 @@ private fun Breakdown(state: UiState, fg: Color, muted: Color) {
                     fontWeight = weight,
                     modifier = Modifier.weight(1f),
                 )
-                Text(
-                    text = "${concText(reading.concentration)} ${reading.unit}",
-                    color = fg,
-                    fontSize = 16.sp,
-                    fontWeight = weight,
-                )
-                if (showIndex) {
+                reading.concentration?.let {
+                    Text(
+                        text = "${concText(it)} ${reading.unit}",
+                        color = fg,
+                        fontSize = 16.sp,
+                        fontWeight = weight,
+                    )
+                }
+                if (showIndex || reading.concentration == null) {
                     Text(
                         text = reading.subIndex.toString(),
                         color = fg,
@@ -307,10 +311,14 @@ private fun Breakdown(state: UiState, fg: Color, muted: Color) {
             }
         }
         Text(
-            text = if (showIndex) {
-                "24 hour average (8 hour for O₃ and CO), then its CPCB index. The highest index is the AQI."
-            } else {
-                "24 hour average (8 hour for O₃ and CO)."
+            text = when {
+                snapshot.source != null && showIndex ->
+                    "CPCB index per pollutant from the station's last 24 hours. The highest is the AQI."
+                snapshot.source != null ->
+                    "US AQI is estimated from the station's PM2.5."
+                showIndex ->
+                    "24 hour average (8 hour for O₃ and CO), then its CPCB index. The highest index is the AQI."
+                else -> "24 hour average (8 hour for O₃ and CO)."
             },
             color = muted,
             fontSize = 12.sp,

@@ -44,7 +44,7 @@ suspend fun updateAllWidgets(context: Context) {
 
 /**
  * Small widget: the number, its category, the place, the scale and how fresh it is.
- * States: no data yet, fresh, and old (data more than 2 hours old, say so plainly).
+ * States: no data yet, fresh, and old (data more than 3 hours old, say so plainly).
  */
 class AqiWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -65,7 +65,7 @@ class AqiDetailWidget : GlanceAppWidget() {
     }
 }
 
-private const val STALE_AFTER_MS = 2 * 60 * 60 * 1000L
+private const val STALE_AFTER_MS = 3 * 60 * 60 * 1000L
 
 @Composable
 private fun WidgetFrame(snapshot: AirSnapshot?, scale: AqiScale, detailed: Boolean) {
@@ -138,7 +138,8 @@ private fun WidgetFrame(snapshot: AirSnapshot?, scale: AqiScale, detailed: Boole
                         modifier = GlanceModifier.defaultWeight(),
                     )
                     Text(
-                        text = "${concText(reading.concentration)} ${reading.unit}",
+                        text = reading.concentration?.let { "${concText(it)} ${reading.unit}" }
+                            ?: reading.subIndex.toString(),
                         style = style,
                         maxLines = 1,
                     )
@@ -150,9 +151,9 @@ private fun WidgetFrame(snapshot: AirSnapshot?, scale: AqiScale, detailed: Boole
 
 @Composable
 private fun Summary(snapshot: AirSnapshot, scale: AqiScale, aqi: Int, band: Band) {
-    val old = System.currentTimeMillis() - snapshot.fetchedAtMs > STALE_AFTER_MS
+    val old = System.currentTimeMillis() - snapshot.asOfMs > STALE_AFTER_MS
     val scaleName = if (scale == AqiScale.CPCB) "CPCB" else "US AQI"
-    val freshness = (if (old) "Old · " else "") + agoText(snapshot.fetchedAtMs)
+    val freshness = (if (old) "Old · " else "") + agoText(snapshot.asOfMs)
     val small = TextStyle(color = ColorProvider(band.fg), fontSize = 11.sp)
 
     Text(

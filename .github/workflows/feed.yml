@@ -1,0 +1,66 @@
+name: Station feed
+
+# Copies CPCB station data from data.gov.in to the `data` branch as stations.json.
+# The app reads that file, so the API key stays in the DATA_GOV_KEY secret and never ships.
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: feed
+  cancel-in-progress: true
+
+jobs:
+  feed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Fetch every station
+        env:
+          KEY: ${{ secrets.DATA_GOV_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$KEY" ]; then echo "::error::Add the DATA_GOV_KEY repository secret"; exit 1; fi
+          base="https://api.data.gov.in/resource/3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69"
+          offset=0
+          : > pages.jsonl
+          while :; do
+            curl -sS --fail --retry 3 --max-time 60 \
+              "$base?api-key=$KEY&format=json&limit=1000&offset=$offset" -o page.json
+            n=$(jq '.records | length' page.json)
+            jq -c '.records[]' page.json >> pages.jsonl
+            echo "offset $offset: $n records"
+            [ "$n" -lt 1000 ] && break
+            offset=$((offset + 1000))
+            [ "$offset" -gt 20000 ] && break
+          done
+          jq -c -s '{
+            fetched: (now | todate),
+            stations: (group_by(.station) | map({
+              n: .[0].station,
+              lat: (.[0].latitude | tonumber? // null),
+              lon: (.[0].longitude | tonumber? // null),
+              t: .[0].last_update,
+              p: (map({key: .pollutant_id, value: (.avg_value | tonumber? // null)}) | from_entries)
+            }))
+          }' pages.jsonl > stations.json
+          count=$(jq '.stations | length' stations.json)
+          echo "stations: $count"
+          jq -r '[.stations[].t] | group_by(.) | map("\(.[0])  x\(length)") | .[]' stations.json | sort | tail -5
+          # Never publish a broken or near-empty file over a good one.
+          [ "$count" -ge 100 ]
+      - name: Publish to the data branch
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir out && cp stations.json out/ && cd out
+          git init -q -b data
+          git add stations.json
+          git -c user.name="justaqi feed" -c user.email="actions@users.noreply.github.com" commit -qm "Station feed"
+          git push -qf "https://x-access-token:$TOKEN@github.com/${{ github.repository }}" data

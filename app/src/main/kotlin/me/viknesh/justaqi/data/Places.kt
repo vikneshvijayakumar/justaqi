@@ -1,10 +1,5 @@
 package me.viknesh.justaqi.data
 
-import kotlin.math.asin
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 data class Place(val name: String, val lat: Double, val lon: Double)
 
@@ -43,12 +38,6 @@ object Places {
         cities.minByOrNull { distanceKm(lat, lon, it.lat, it.lon) }
             ?.takeIf { distanceKm(lat, lon, it.lat, it.lon) <= maxKm }
 
-    fun distanceKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        val r = 6371.0
-        val dLat = Math.toRadians(lat2 - lat1)
-        val dLon = Math.toRadians(lon2 - lon1)
-        val a = sin(dLat / 2).pow(2) +
-            cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2)
-        return 2 * r * asin(sqrt(a))
-    }
+    fun distanceKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double =
+        me.viknesh.justaqi.core.distanceKm(lat1, lon1, lat2, lon2)
 }

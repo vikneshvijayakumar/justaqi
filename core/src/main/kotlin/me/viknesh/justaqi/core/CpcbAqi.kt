@@ -65,6 +65,25 @@ object CpcbAqi {
     }
 
     /**
+     * Reverse of [subIndex]: the concentration that gives [index]. Used to estimate a
+     * concentration from station data, which arrives as sub-indices only.
+     */
+    fun concentrationFor(pollutant: Pollutant, index: Int): Double {
+        val upper = CONC_UPPER.getValue(pollutant)
+        var cLow = 0.0
+        var iLow = 0
+        for (k in upper.indices) {
+            if (index <= AQI_UPPER[k] || k == upper.lastIndex) {
+                val fraction = ((index - iLow).toDouble() / (AQI_UPPER[k] - iLow)).coerceIn(0.0, 1.0)
+                return cLow + fraction * (upper[k] - cLow)
+            }
+            cLow = upper[k]
+            iLow = AQI_UPPER[k]
+        }
+        error("unreachable")
+    }
+
+    /**
      * Mean of the [hours] values ending at [endIndex] (inclusive), or null when fewer than
      * two thirds of them are present.
      */

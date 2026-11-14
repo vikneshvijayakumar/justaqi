@@ -5,8 +5,11 @@ import me.viknesh.justaqi.core.Pollutant
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** One row of the breakdown. [concentration] is the CPCB averaging-window mean: µg/m³, CO in mg/m³. */
-data class PollutantReading(val pollutant: Pollutant, val concentration: Double, val subIndex: Int) {
+/**
+ * One row of the breakdown. [concentration] is the CPCB averaging-window mean (µg/m³, CO in mg/m³).
+ * It is null for station data, which arrives as sub-indices only.
+ */
+data class PollutantReading(val pollutant: Pollutant, val concentration: Double?, val subIndex: Int) {
     val unit: String get() = if (pollutant == Pollutant.CO) "mg/m³" else "µg/m³"
 }
 
@@ -23,7 +26,14 @@ data class AirSnapshot(
     val uvFromHour: Int?,
     val uvToHour: Int?,
     val pollutants: List<PollutantReading> = emptyList(),
+    /** Station name and distance when the numbers are measured. Null means modelled estimate. */
+    val source: String? = null,
+    /** When the station last reported. Null for modelled data. */
+    val measuredAtMs: Long? = null,
 ) {
+    /** The time the numbers describe: the station's report time, else when we fetched. */
+    val asOfMs: Long get() = measuredAtMs ?: fetchedAtMs
+
     fun aqiFor(scale: AqiScale): Int? = if (scale == AqiScale.CPCB) cpcbAqi else usAqi
 
     fun toJson(): String {
@@ -40,9 +50,11 @@ data class AirSnapshot(
         uvToHour?.let { o.put("uvToHour", it) }
         val arr = JSONArray()
         pollutants.forEach {
-            arr.put(JSONObject().put("p", it.pollutant.name).put("c", it.concentration).put("i", it.subIndex))
+            arr.put(JSONObject().put("p", it.pollutant.name).putOpt("c", it.concentration).put("i", it.subIndex))
         }
         o.put("pollutants", arr)
+        source?.let { o.put("source", it) }
+        measuredAtMs?.let { o.put("measuredAtMs", it) }
         return o.toString()
     }
 
@@ -63,9 +75,11 @@ data class AirSnapshot(
                 pollutants = o.optJSONArray("pollutants")?.let { arr ->
                     List(arr.length()) {
                         val r = arr.getJSONObject(it)
-                        PollutantReading(Pollutant.valueOf(r.getString("p")), r.getDouble("c"), r.getInt("i"))
+                        PollutantReading(Pollutant.valueOf(r.getString("p")), r.doubleOrNull("c"), r.getInt("i"))
                     }
                 } ?: emptyList(),
+                source = if (o.has("source")) o.getString("source") else null,
+                measuredAtMs = if (o.has("measuredAtMs")) o.getLong("measuredAtMs") else null,
             )
         }.getOrNull()
 

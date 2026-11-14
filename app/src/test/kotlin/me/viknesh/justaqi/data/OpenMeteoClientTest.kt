@@ -96,11 +96,30 @@ class OpenMeteoClientTest {
 
     @Test
     fun place_search_parses_results() {
-        val body = """{"results":[{"name":"Saket","latitude":28.52,"longitude":77.2,"admin1":"Delhi"},
-            {"name":"Delhi","latitude":28.65,"longitude":77.23,"admin1":"Delhi"}]}"""
+        val body = """{"features":[
+            {"geometry":{"coordinates":[77.14,28.63]},"properties":{"name":"Naraina","city":"New Delhi","state":"Delhi","countrycode":"IN"}},
+            {"geometry":{"coordinates":[90.4,23.8]},"properties":{"name":"Dhaka","countrycode":"BD"}}]}"""
         val places = PlaceSearch.parse(body)
-        assertEquals(listOf("Saket, Delhi", "Delhi"), places.map { it.name })
-        assertEquals(28.52, places[0].lat)
+        assertEquals(listOf("Naraina, New Delhi, Delhi"), places.map { it.name })
+        assertEquals(28.63, places[0].lat)
+        assertEquals(77.14, places[0].lon)
         assertEquals(emptyList(), PlaceSearch.parse("{}"))
+    }
+
+    @Test
+    fun station_feed_parses_and_skips_missing_values() {
+        val body = """{"stations":[
+            {"n":"Shadipur, Delhi - CPCB","lat":28.65,"lon":77.16,"t":"14-11-2026 01:00:00",
+             "p":{"PM2.5":356,"PM10":257,"NO2":178,"NH3":11,"SO2":null,"OZONE":6}},
+            {"n":"Broken","lat":null,"lon":77.0,"t":"x","p":{}}]}"""
+        val stations = StationFeed.parse(body)
+        assertEquals(1, stations.size)
+        val s = stations[0]
+        assertEquals(356, s.aqi)
+        assertEquals(Pollutant.PM25, s.dominant)
+        assertEquals(5, s.subIndices.size)
+        assertEquals(6, s.subIndices[Pollutant.O3])
+        val expected = ZonedDateTime.of(2026, 11, 14, 1, 0, 0, 0, ist).toInstant().toEpochMilli()
+        assertEquals(expected, s.updatedAtMs)
     }
 }

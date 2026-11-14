@@ -7,6 +7,9 @@ enum class Pollutant(val label: String) {
     SO2("SO₂"),
     O3("O₃"),
     CO("CO"),
+
+    /** Only in station data. The modelled feed has no NH₃ for India. */
+    NH3("NH₃"),
 }
 
 enum class AqiScale { CPCB, US }
