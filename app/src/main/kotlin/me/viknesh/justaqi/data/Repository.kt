@@ -16,6 +16,7 @@ sealed interface RefreshResult {
 
 class Repository(context: Context) {
     private val prefs = Prefs(context)
+    private val stations = StationFeed(context)
 
     /**
      * Measured station data when a usable station is near (see [StationPicker]), else the
@@ -33,7 +34,7 @@ class Repository(context: Context) {
             null
         }
         val pick = try {
-            StationPicker.pick(StationFeed.fetch(), place.lat, place.lon, System.currentTimeMillis())
+            StationPicker.pick(stations.near(place.lat, place.lon), place.lat, place.lon, System.currentTimeMillis())
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

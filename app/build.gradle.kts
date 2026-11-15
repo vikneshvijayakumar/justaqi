@@ -16,6 +16,11 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
+
+        // data.gov.in key, from the DATA_GOV_KEY environment variable (a repo secret in CI).
+        // Builds without it still work and show the modelled estimate only.
+        val dataGovKey = providers.environmentVariable("DATA_GOV_KEY").getOrElse("")
+        buildConfigField("String", "DATA_GOV_KEY", "\"$dataGovKey\"")
     }
 
     // Fixed debug key: CI runners make a new one each build, and Android refuses to update an
@@ -47,6 +52,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     // Keeps the APK reproducible for F-Droid: no dependency metadata blob.

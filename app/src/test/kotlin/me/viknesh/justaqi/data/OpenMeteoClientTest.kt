@@ -108,16 +108,21 @@ class OpenMeteoClientTest {
 
     @Test
     fun station_feed_parses_and_skips_missing_values() {
-        val body = """{"stations":[
-            {"n":"Shadipur, Delhi - CPCB","lat":28.65,"lon":77.16,"t":"14-11-2026 01:00:00",
-             "p":{"PM2.5":356,"PM10":257,"NO2":178,"NH3":11,"SO2":null,"OZONE":6}},
-            {"n":"Broken","lat":null,"lon":77.0,"t":"x","p":{}}]}"""
-        val stations = StationFeed.parse(body)
+        fun row(station: String, lat: String, id: String, avg: String) =
+            """{"station":"$station","latitude":"$lat","longitude":"77.16","last_update":"14-11-2026 01:00:00","pollutant_id":"$id","avg_value":"$avg"}"""
+        val body = """{"records":[
+            ${row("Shadipur, Delhi - CPCB", "28.65", "PM2.5", "356")},
+            ${row("Shadipur, Delhi - CPCB", "28.65", "PM10", "257")},
+            ${row("Shadipur, Delhi - CPCB", "28.65", "NO2", "178")},
+            ${row("Shadipur, Delhi - CPCB", "28.65", "SO2", "NA")},
+            ${row("Shadipur, Delhi - CPCB", "28.65", "OZONE", "6")},
+            ${row("Broken", "NA", "PM2.5", "100")}]}"""
+        val stations = StationFeed.parseRecords(body)
         assertEquals(1, stations.size)
         val s = stations[0]
         assertEquals(356, s.aqi)
         assertEquals(Pollutant.PM25, s.dominant)
-        assertEquals(5, s.subIndices.size)
+        assertEquals(4, s.subIndices.size)
         assertEquals(6, s.subIndices[Pollutant.O3])
         val expected = ZonedDateTime.of(2026, 11, 14, 1, 0, 0, 0, ist).toInstant().toEpochMilli()
         assertEquals(expected, s.updatedAtMs)
